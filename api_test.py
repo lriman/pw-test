@@ -23,6 +23,7 @@ try:
     for u in USERS:
         data = {"email": u["email"], "password1": u["pwd"], "password2": u["pwd"], "name": u["name"]}
         r = requests.post('http://127.0.0.1:8001/api/sign-up', json=data)
+        print(r.json())
         if r.json()["error"] != "":
             raise Exception(r.json()["error"])
 
@@ -36,6 +37,7 @@ try:
     for u in USERS:
         data = {"email": u["name"], "password1": u["pwd"], "password2": u["pwd"], "name": u["name"]}
         r = requests.post('http://127.0.0.1:8001/api/sign-up', json=data)
+        print(r.json())
         if r.json()["error"] != "valid email address is required":
             raise Exception(r.json()["error"])
 
@@ -48,6 +50,7 @@ try:
     for u in USERS:
         data = {"email": u["email"], "password1": u["pwd"], "password2": u["pwd"]+u["pwd"], "name": u["name"]}
         r = requests.post('http://127.0.0.1:8001/api/sign-up', json=data)
+        print(r.json())
         if r.json()["error"] != "password and confirmation is not equal":
             raise Exception(r.json()["error"])
 
@@ -60,6 +63,7 @@ try:
     for u in USERS:
         data = {"email": u["email"], "password1": u["pwd"], "password2": u["pwd"], "name": "X"}
         r = requests.post('http://127.0.0.1:8001/api/sign-up', json=data)
+        print(r.json())
         if r.json()["error"] != "user name is required":
             raise Exception(r.json()["error"])
 
@@ -73,6 +77,7 @@ try:
     for u in USERS:
         data = {"email": u["email"], "password1": u["pwd"], "password2": u["pwd"], "name": u["name"]}
         r = requests.post('http://127.0.0.1:8001/api/sign-up', json=data)
+        print(r.json())
         if r.json()["error"] != "email already used":
             raise Exception(r.json()["error"])
 
@@ -87,7 +92,8 @@ try:
         u = USERS[idx]
         data = {"email": u["email"], "password": u["pwd"]}
         r = requests.post('http://127.0.0.1:8001/api/sign-in', json=data)
-        USERS[idx]["token"] = r.json()["data"]["token"]
+        print(r.json())
+        USERS[idx]["token"] = r.json()["data"]["Token"]
 
     print("Sign in - OK")
 except BaseException as e:
@@ -99,6 +105,7 @@ try:
     for u in USERS:
         data = {"email": u["email"], "password": u["pwd"]+u["pwd"]}
         r = requests.post('http://127.0.0.1:8001/api/sign-in', json=data)
+        print(r.json())
         if r.json()["error"] != "login and password does not match":
             raise Exception(r.json()["error"])
 
@@ -111,6 +118,7 @@ except BaseException as e:
 try:
     for u in USERS:
         r = requests.get('http://127.0.0.1:8001/api/profile', headers={'Authorization': 'access_token ' + u["token"]})
+        print(r.json())
         if r.json()["data"]["email"] != u["email"]:
             raise Exception("data not equal")
 
@@ -123,6 +131,7 @@ except BaseException as e:
 try:
     for u in USERS:
         r = requests.get('http://127.0.0.1:8001/api/profile', headers={'Authorization': 'access_token fake.token.jwt'})
+        print(r.json())
         if r.json()["error"] != "Malformed authentication token":
             raise Exception(r.json()["error"])
 
@@ -136,6 +145,7 @@ try:
     for u in USERS:
         data = {"name": u["name"][:5]}
         r = requests.post('http://127.0.0.1:8001/api/transfer/autocomplete', headers={'Authorization': 'access_token ' + u["token"]}, json=data)
+        print(r.json())
         if len(r.json()["data"]) < 1:
             raise Exception("User not found")
 
@@ -143,4 +153,32 @@ try:
 except BaseException as e:
     print("Auto complete- FAIL:", e)
 
+
+# Transfer
+try:
+    recipient = USERS[0]
+    for u in USERS[1:]:
+        data = {"recipient": recipient["email"], "amount": 400}
+        r = requests.post('http://127.0.0.1:8001/api/transfer/create', headers={'Authorization': 'access_token ' + u["token"]}, json=data)
+        if r.json()["error"] != "":
+            raise Exception(r.json()["error"])
+
+    print("Transfer - OK")
+except BaseException as e:
+    print("Transfer - FAIL:", e)
+
+
+# Transfer - low balance
+try:
+    recipient = USERS[0]
+    for u in USERS[1:]:
+        data = {"recipient": recipient["email"], "amount": 400}
+        r = requests.post('http://127.0.0.1:8001/api/transfer/create', headers={'Authorization': 'access_token ' + u["token"]}, json=data)
+        print(r.json())
+        if r.json()["error"] != "balance is too low":
+            raise Exception(r.json()["error"])
+
+    print("Transfer / balance is too low - OK")
+except BaseException as e:
+    print("Transfer / balance is too low - FAIL:", e)
 

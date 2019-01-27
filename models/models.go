@@ -2,18 +2,19 @@ package models
 
 import (
 	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
 )
 
 type User struct {
 	gorm.Model
-	Email    string `json:"email";gorm:"unique_index"`
-	Name     string `json:"name";gorm:"index"`
+	Email    string `gorm:"type:varchar(256);unique_index"`
+	Name     string `gorm:"type:varchar(256);index"`
 	Password string `json:"-"`
-	Balance  uint   `json:"balance"`
-	Token    string `json:"token";gorm:"-"`
+	Balance  uint
+	Token    string `gorm:"-"`
 }
 
-type Transactions struct {
+type Transaction struct {
 	gorm.Model
 	FromID   uint `gorm:"index"`
 	ToID     uint `gorm:"index"`

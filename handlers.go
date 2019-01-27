@@ -99,3 +99,27 @@ func (a *App) AutoCompleteHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Response for AutoCompleteHandler:", resp)
 	json.NewEncoder(w).Encode(resp)
 }
+
+func (a *App) TransferHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("TransferHandler")
+
+	req := models.RequestTransfer{}
+	resp := models.Response{}
+
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		resp.Error = err.Error()
+		json.NewEncoder(w).Encode(resp)
+		log.Println("Response for TransferHandler:", resp)
+		return
+	}
+
+	err = a.TransferController(r.Context().Value("user").(string), req.Recipient, req.Amount)
+	if err != nil {
+		resp.Error = err.Error()
+	}
+
+	log.Println("Response for TransferHandler:", resp)
+	json.NewEncoder(w).Encode(resp)
+}
+

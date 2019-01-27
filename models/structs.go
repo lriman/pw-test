@@ -37,3 +37,8 @@ type RequestSignUp struct {
 type RequestAutoComplete struct {
 	Name string `json:"name"`
 }
+
+type RequestTransfer struct {
+	Recipient string `json:"recipient"`
+	Amount    uint  `json:"amount"`
+}

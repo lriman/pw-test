@@ -56,7 +56,7 @@ func (a *App) SignUpController(email string, pw1 string, pw2 string, name string
 		Balance: 500,
 	}
 
-	return repository.CreateUser(a.DB, &u)
+	return repository.SaveUser(a.DB, &u)
 }
 
 
@@ -82,4 +82,56 @@ func (a *App) AutoCompleteController(name string) ([]*models.ResponseAutoComplet
 	}
 
 	return profiles, nil
+}
+
+func (a *App) TransferController(from string, to string, amount uint) error {
+
+	var err error
+	var fromUser, toUser *models.User
+
+	tx := a.DB.Begin()
+	if err = tx.Error; err != nil {
+		return err
+	}
+
+	fromUser, err = repository.GetUsersForUpdate(a.DB, from)
+	if err != nil{
+		tx.Rollback()
+		return err
+	}
+
+	toUser, err = repository.GetUsersForUpdate(a.DB, to)
+	if err != nil{
+		tx.Rollback()
+		return err
+	}
+
+	if fromUser.Balance < amount {
+		tx.Rollback()
+		return fmt.Errorf("balance is too low")
+	}
+
+	//txLog := models.Transaction{FromID: fromUser.ID, ToID: toUser.ID, Amount: amount}
+	fromUser.Balance -= amount
+	toUser.Balance += amount
+
+	err = tx.Save(fromUser).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	err = tx.Save(toUser).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	err = tx.Save(&models.Transaction{FromID: fromUser.ID, ToID: toUser.ID, Amount: amount}).Error
+	if err != nil {
+		tx.Rollback()
+		return err
+	}
+
+	return tx.Commit().Error
 }
