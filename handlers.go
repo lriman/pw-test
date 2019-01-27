@@ -2,11 +2,10 @@ package main
 
 import (
 	"encoding/json"
-	"net/http"
-	"log"
 	"github.com/pw-test/models"
+	"log"
+	"net/http"
 )
-
 
 func (a *App) SignInHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("SignIn")
@@ -33,7 +32,6 @@ func (a *App) SignInHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
-
 func (a *App) SignUpHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("SignUp")
 
@@ -57,7 +55,6 @@ func (a *App) SignUpHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
-
 func (a *App) ProfileHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Request for Profile")
 
@@ -73,7 +70,6 @@ func (a *App) ProfileHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Response for Profile:", resp)
 	json.NewEncoder(w).Encode(resp)
 }
-
 
 func (a *App) AutoCompleteHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("AutoCompleteHandler")
@@ -123,3 +119,37 @@ func (a *App) TransferHandler(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(resp)
 }
 
+func (a *App) HistoryHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("HistoryHandler")
+
+	req := models.RequestHistory{}
+	resp := models.Response{}
+
+	err := json.NewDecoder(r.Body).Decode(&req)
+	if err != nil {
+		resp.Error = err.Error()
+		json.NewEncoder(w).Encode(resp)
+		log.Println("Response for HistoryHandler:", resp)
+		return
+	}
+
+	profile, err := a.ProfileController(r.Context().Value("user").(string))
+	if err != nil {
+		resp.Error = err.Error()
+		json.NewEncoder(w).Encode(resp)
+		log.Println("Response for HistoryHandler:", resp)
+		return
+	}
+
+	txs, err := a.HistoryController(profile.ID, req.DateMin(), req.DateMax(),
+		req.AmountMin, req.AmountMax, req.Name, req.Sort, req.Size, req.Offset)
+
+	if err != nil {
+		resp.Error = err.Error()
+	} else {
+		resp.Data = txs
+	}
+
+	log.Println("Response for HistoryHandler:", resp)
+	json.NewEncoder(w).Encode(resp)
+}

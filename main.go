@@ -13,4 +13,3 @@ func main() {
 	log.Println("Service is open on 8001 port")
 	a.Run(":8001")
 }
-

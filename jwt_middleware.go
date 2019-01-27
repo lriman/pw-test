@@ -1,12 +1,12 @@
 package main
 
 import (
-	"net/http"
-	"github.com/pw-test/models"
-	"strings"
 	"context"
 	"encoding/json"
 	"github.com/dgrijalva/jwt-go"
+	"github.com/pw-test/models"
+	"net/http"
+	"strings"
 )
 
 // NOT SAFE. IT'S JUST FOR TEST TASK !

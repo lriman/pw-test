@@ -1,12 +1,12 @@
 package main
 
 import (
-	"log"
-	"net/http"
 	"fmt"
 	"github.com/gorilla/mux"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
+	"log"
+	"net/http"
 
 	"github.com/pw-test/models"
 )
@@ -37,7 +37,7 @@ func (a *App) Initialize(host, user, pwd, db string) {
 	a.Router.HandleFunc("/api/profile", a.ProfileHandler).Methods("GET")
 	a.Router.HandleFunc("/api/transfer/autocomplete", a.AutoCompleteHandler).Methods("POST")
 	a.Router.HandleFunc("/api/transfer/create", a.TransferHandler).Methods("POST")
-	//a.Router.HandleFunc("/api/transfer/history", a.TransferHistory).Methods("POST")
+	a.Router.HandleFunc("/api/transfer/history", a.HistoryHandler).Methods("POST")
 }
 
 func (a *App) Run(addr string) {

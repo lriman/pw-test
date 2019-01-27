@@ -2,7 +2,6 @@ import requests
 import random
 import string
 
-
 USERS = []
 
 
@@ -30,6 +29,20 @@ try:
     print("Sign up - OK")
 except BaseException as e:
     print("Sign up - failed:", e)
+
+
+# Wrong json
+try:
+    for u in USERS:
+        data = {"email": 123, "password1": 123, "password2": 123, "name": 123}
+        r = requests.post('http://127.0.0.1:8001/api/sign-up', json=data)
+        print(r.json())
+        if "cannot unmarshal" not in r.json()["error"]:
+            raise Exception(r.json()["error"])
+
+    print("Sign up / json error - OK")
+except BaseException as e:
+    print("Sign up / json error - FAIL:", e)
 
 
 # Wrong email
@@ -181,4 +194,21 @@ try:
     print("Transfer / balance is too low - OK")
 except BaseException as e:
     print("Transfer / balance is too low - FAIL:", e)
+
+
+# History
+try:
+    for u in USERS:
+        data = {
+            "timestampMin": 1548618776, "timestampMax": None,
+            "amountMin": None, "amountMax": 500, "Name": u["name"][:1],
+            "sort": "date", "size": 10, "offset": 0}
+        r = requests.post('http://127.0.0.1:8001/api/transfer/history', headers={'Authorization': 'access_token ' + u["token"]}, json=data)
+        print(r.json())
+        if len(r.json()["data"]) < 1:
+            raise Exception(r.json()["error"])
+
+    print("History - OK")
+except BaseException as e:
+    print("History - FAIL:", e)
 
